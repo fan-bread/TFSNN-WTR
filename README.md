@@ -10,7 +10,7 @@ Wireless Technology Recognition (WTR) distinguishes different wireless technolog
 ![proposed](img/stru.gif)
 
 ### Performance
-#### Identification accuracy
+#### Identification Accuracy
 Sampling rate: 10Msps, 15Msps, 20Msps
 ![accuracy](img/acc.gif)
 #### Feature Visualization
