@@ -1,12 +1,9 @@
-"""
-直接AFF注意力机制后面接信号识别模块SignalIdentification（SNN）
-"""
 import torch
 import torch.nn as nn
 from torch.nn import Dropout, Flatten
 import numpy as np
 
-class AvgMeter:#计算平均值
+class AvgMeter:
 
     def __init__(self):
         self.value = 0
@@ -19,20 +16,19 @@ class AvgMeter:#计算平均值
     def avg(self):
         return self.value / self.number
 
-#模拟二值化的生物神经元
-class ZIF(torch.autograd.Function):#torch.autograd.Function -> 自定义的正向和反向传播函数
+class ZIF(torch.autograd.Function):
     @staticmethod
     def forward(ctx, input, gamma):
-        out = (input > 0).float()#输入二值化：如果输入大于0，则输出为1，否则为0
+        out = (input > 0).float()
         L = torch.tensor([gamma])
-        ctx.save_for_backward(input, out, L)#ctx,用于在反向传播期间保存信息，保存input、out和L这三个张量，
-                                            # 反向传播时可能会需要这些数据
+        ctx.save_for_backward(input, out, L)
+                                           
         return out
 
     @staticmethod
-    def backward(ctx, grad_output):#自定义梯度计算方式
-        (input, out, others) = ctx.saved_tensors#获取正向传播时保存的数据
-        gamma = others[0].item()#用于梯度计算
+    def backward(ctx, grad_output):
+        (input, out, others) = ctx.saved_tensors
+        gamma = others[0].item()
         grad_input = grad_output.clone()
         tmp = (1 / gamma) * (1 / gamma) * ((gamma - input.abs()).clamp(min=0))
         # tmp = torch.ones_like(input)
@@ -40,25 +36,17 @@ class ZIF(torch.autograd.Function):#torch.autograd.Function -> 自定义的正�
         grad_input = grad_input * tmp
         return grad_input, None
 
-#更细致地模拟生物神经元的尖峰行为，包括近似梯度的处理
+
 class DSPIKE(nn.Module):
     def __init__(self, region=1.0):
-        """
-        双曲正切函数tanh的变形
-        定义：f(x) = (exp(x) - exp(-x)) / (exp(x) + exp(-x))
-        值域：(-1, 1)
-        特点：与Sigmoid函数类似，但输出值以0为中心
-        """
         super(DSPIKE, self).__init__()
         self.region = region
 
     def forward(self, x, temp):
-        # 构造替代函数tanh的变形
-        out_bp = torch.clamp(x, -self.region, self.region)# 将输入限幅，限制在 [-self.region, self.region] 之间
+        out_bp = torch.clamp(x, -self.region, self.region)
         out_bp = (torch.tanh(temp * out_bp)) / \
-                (2 * np.tanh(self.region * temp)) + 0.5      # 通过缩放和偏移将其映射到 [0, 1] 的范围内，缩放系数为 1 / (2 * np.tanh(self.region * temp))，偏移量为 0.5。
-                                                             # 为了近似Heaviside阶跃函数，同时具有连续可导的特性。
-        out_s = (x >= 0).float()#正值为1，负值为0 -> 实际上是一个Heaviside 阶跃函数
+                (2 * np.tanh(self.region * temp)) + 0.5     
+        out_s = (x >= 0).float()
         return (out_s.float() - out_bp).detach() + out_bp
 
 class LIFSpike(nn.Module):
@@ -85,15 +73,14 @@ class LIFSpike(nn.Module):
         self.soft_reset = soft_reset
 
     def forward(self, x):
-        mem = 0#膜电位初始状态初始化为0
+        mem = 0
         spike_out = []
-        T = x.shape[2]#T是时间步
-        for t in range(T):#在每个时间步
-            mem = mem * self.tau + x[:, :, t]#膜电位 = 膜电位*衰减因子 + x(当前输入）
-            spike = self.act(mem - self.thresh, self.gamma)#mem与阈值self.thresh的差值被送入激活函数，看是否产生尖峰 -> 超过阈值
-            mem = mem - spike * self.thresh if self.soft_reset else (1 - spike) * mem#发放脉冲，膜电位复位，①soft_reset=True，soft方式，膜电位为当前膜电位减去阈值电压
-                                                                                             #②soft_reset=True，hard方式，膜电位为0
-                                                                                            # 没有发放脉冲，膜电位保持不变，还是mem
+        T = x.shape[2]
+        for t in range(T):
+            mem = mem * self.tau + x[:, :, t]
+            spike = self.act(mem - self.thresh, self.gamma)
+            mem = mem - spike * self.thresh if self.soft_reset else (1 - spike) * mem
+                                                                                            
             spike_out.append(spike)
 
         return torch.stack(spike_out, dim=2)
@@ -198,19 +185,3 @@ class SAFF(nn.Module):
         return output
     def count_parameters(self):
         return sum(p.numel() for p in self.parameters() if p.requires_grad)
-if __name__ == "__main__":
-    class Config:
-        def __init__(self):
-            self.model_params = {
-                'thresh': 1,
-                'tau': 0.5,
-                'gamma': 1,
-                'dspike': True,
-                'soft_reset': False,
-            }
-    conf = Config()
-    model = SAFF(**conf.model_params)
-    iq_data = torch.randn(64, 2, 1, 440)
-    fft_data = torch.randn(64, 2, 1, 440)#输入数据尺寸
-    output = model(iq_data, fft_data)
-    print(output.shape)
