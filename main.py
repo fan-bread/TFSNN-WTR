@@ -4,9 +4,9 @@ from torch.utils.data import TensorDataset, DataLoader
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 
-from util/train_tools import *
-from util/data_loader import *
-from util/AFF import *
+from util.train_tools import *
+from util.data_loader import *
+from util.AFF import *
 
 #hyperparameters
 class Config:
