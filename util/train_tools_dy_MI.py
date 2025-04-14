@@ -77,8 +77,7 @@ def evaluate(model, loss, val_dataloader, epoch):
 def test(model, test_dataloader):
     model.eval()
     correct = 0
-    total_inference_time = 0.0  # 记录总推理时间
-    test_samples = len(test_dataloader.dataset)  # 测试集总样本数
+    test_samples = len(test_dataloader.dataset)  
     with torch.no_grad():
         for iq_data, fft_data, target in test_dataloader:
             target = target.long()
@@ -91,24 +90,16 @@ def test(model, test_dataloader):
             output = model(iq_data, fft_data)
 
             end_time = time.time()
-            # 累加推理时间
-            total_inference_time += (end_time - start_time)
-
             pred = output.argmax(dim=1, keepdim=True)
             correct += pred.eq(target.view_as(pred)).sum().item()
-    # 计算准确率
     accuracy = correct / test_samples
-
-    # 计算平均推理时间（每条样本的推理时间）
-    avg_inference_time = total_inference_time / test_samples
-
-    return accuracy, avg_inference_time
+    return 
 
 
 def train_and_evaluate(model, loss_function, train_dataloader, val_dataloader, optimizer, epochs, save_path, loss_path, scheduler):
     current_min_test_loss = 100
     loss_acc = np.zeros([1, 4])
-    epochs_no_improve = 0  # 用于追踪没有改善的epoch数量
+    epochs_no_improve = 0 
     start_time = time.time()
 
     for epoch in range(1, epochs + 1):
@@ -121,13 +112,13 @@ def train_and_evaluate(model, loss_function, train_dataloader, val_dataloader, o
         print(f"Epoch {epoch}: Current learning rate = {current_lr}")
 
         if test_loss < current_min_test_loss:
-            epochs_no_improve = 0  # 重置计数器
+            epochs_no_improve = 0  
             print("The validation loss is improved from {} to {}, new model weight is saved.".format(
                 current_min_test_loss, test_loss))
             current_min_test_loss = test_loss
             torch.save(model, save_path)
         else:
-            epochs_no_improve += 1  # 增加没有改善的epoch计数
+            epochs_no_improve += 1  
             print("The validation loss is not improved.")
         print("------------------------------------------------")
         loss_acc_each_epoch = np.reshape([train_loss, train_acc, test_loss, test_acc], [1, 4])
