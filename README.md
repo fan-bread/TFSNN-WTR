@@ -1,5 +1,5 @@
 # TFSNN：Energy-Efficient Wireless Technology Recognition Method Using Time-Frequency Feature Fusion Spiking Neural Networks
-This repository contains the official implementation of our ![TFSNN] (https://ieeexplore.ieee.org/document/10876404)
+This repository contains the official implementation of our - [TFSNN](https://ieeexplore.ieee.org/document/10876404)
 ## Paper
 L. Hu, Y. Wang, X. Fu, L. Guo, Y. Lin and G. Gui, "Energy-Efficient Wireless Technology Recognition Method Using Time-Frequency Feature Fusion Spiking Neural Networks," in IEEE Transactions on Information Forensics and Security, vol. 20, pp. 2252-2265, 2025, doi: 10.1109/TIFS.2025.3539519. 
 
@@ -17,5 +17,20 @@ Sampling rate: 10Msps, 15Msps, 20Msps
 Sampling rate: 10Msps SNR: 20dB
 ![tsne](img/tsne.gif)
 
-### Citation
+## Citation
+
+If you find our work useful, please consider citing:
+
+```bibtex
+@article{hu2025energy,
+  title={Energy-Efficient Wireless Technology Recognition Method Using Time-Frequency Feature Fusion Spiking Neural Networks},
+  author={Hu, Lifan and Wang, Yu and Fu, Xue and Guo, Lantu and Lin, Yun and Gui, Guan},
+  journal={IEEE Transactions on Information Forensics and Security},
+  year={2025},
+  publisher={IEEE}
+}
+
+## License / 许可证
+本项目基于自定义非商业许可证发布，禁止用于任何形式的商业用途。
+This project is distributed under a custom non-commercial license. Any form of commercial use is prohibited.
 
