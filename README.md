@@ -15,4 +15,7 @@ Sampling rate: 10Msps
 ![accuracy](img/acc_10msps.pdf)
 #### Feature Visualization
 Sampling rate: 10Msps SNR: 20dB
-![tsne](img/tsne.png)
+![tsne](img/tsne.gif)
+
+### Citation
+
